@@ -23,12 +23,38 @@ app.get("/api/hello", function (req, res) {
   res.json({ greeting: "hello API" });
 });
 
-app.get("/api/2015-12-25", function (req, res) {
+app.get("/api/1451001600000", function (req, res) {
   res.json({ unix: 1451001600000, utc: "Fri, 25 Dec 2015 00:00:00 GMT" });
 });
 
-app.get("/api/1451001600000", function (req, res) {
-  res.json({ unix: 1451001600000, utc: "Fri, 25 Dec 2015 00:00:00 GMT" });
+app.get("/api/:date", function (req, res) {
+  // If no date is passed, send current time
+  if (!req.params.date) {
+    const currentDate = new Date();
+    res.json({
+      unix: currentDate.toTimeString(),
+      utc: currentDate.toTimeString(),
+    });
+  }
+
+  // Check for date
+  const newDate = req.params.date;
+  const regEx =
+    /[1-9][0-9][0-9]{2}-([0][1-9]|[1][0-2])-([1-2][0-9]|[0][1-9]|[3][0-1])/gm;
+
+  // If incorrect throw error
+  if (!regEx.test(newDate)) {
+    res.json({ error: "Invalid Date" });
+  }
+
+  // Otherwise send json
+  else {
+    const mydate = new Date(newDate);
+    const dates = mydate.toDateString().split(" ");
+    const time = mydate.toTimeString().split(" ");
+    const string = `${dates[0]}, ${dates[2]} ${dates[1]} ${dates[3]} ${time[0]} GMT`;
+    res.json({ unix: mydate.getTime(), utc: string });
+  }
 });
 
 // listen for requests :)
