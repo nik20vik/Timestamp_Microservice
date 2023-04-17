@@ -19,42 +19,30 @@ app.get("/", function (req, res) {
 });
 
 // your first API endpoint...
-app.get("/api/hello", function (req, res) {
-  res.json({ greeting: "hello API" });
+// If no date is passed
+app.get("/api", function (req, res) {
+  let date = new Date();
+  res.json({ unix: date.getTime(), utc: date.toUTCString() });
 });
 
-app.get("/api/1451001600000", function (req, res) {
-  res.json({ unix: 1451001600000, utc: "Fri, 25 Dec 2015 00:00:00 GMT" });
-});
+const isInvalidDate = (date) => date.toUTCString() === "Invalid Date";
 
+// If date is passed
 app.get("/api/:date", function (req, res) {
-  // If no date is passed, send current time
-  if (!req.params.date) {
-    const currentDate = new Date();
-    res.json({
-      unix: currentDate.toTimeString(),
-      utc: currentDate.toTimeString(),
-    });
+  let date = new Date(req.params.date);
+
+  if (isInvalidDate(date)) {
+    date = new Date(+req.params.date);
   }
 
-  // Check for date
-  const newDate = req.params.date;
-  const regEx =
-    /[1-9][0-9][0-9]{2}-([0][1-9]|[1][0-2])-([1-2][0-9]|[0][1-9]|[3][0-1])/gm;
-
-  // If incorrect throw error
-  if (!regEx.test(newDate)) {
+  if (isInvalidDate(date)) {
     res.json({ error: "Invalid Date" });
   }
 
-  // Otherwise send json
-  else {
-    const mydate = new Date(newDate);
-    const dates = mydate.toDateString().split(" ");
-    const time = mydate.toTimeString().split(" ");
-    const string = `${dates[0]}, ${dates[2]} ${dates[1]} ${dates[3]} ${time[0]} GMT`;
-    res.json({ unix: mydate.getTime(), utc: string });
-  }
+  res.json({
+    unix: date.getTime(),
+    utc: date.toUTCString(),
+  });
 });
 
 // listen for requests :)
